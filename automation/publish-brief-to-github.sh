@@ -164,23 +164,39 @@ index_html = f'''<!doctype html>
   </div>
 
   <div class="card">
-    <h2>按主题筛选</h2>
+    <h2>按主题筛选 + 关键词搜索</h2>
     <div class="chips" id="chips">{chip_html}</div>
+    <input id="searchInput" type="search" placeholder="搜索日期/主题/Top关键词（如 DiT、世界模型、RLHF）" style="width:100%;padding:.6rem .8rem;border:1px solid #ccc;border-radius:8px;margin:.2rem 0 .8rem;"/>
     <ul id="list">{''.join(cards)}</ul>
   </div>
 
 <script>
 const chips = document.querySelectorAll('.chip');
 const items = document.querySelectorAll('.item');
+const searchInput = document.getElementById('searchInput');
+let activeTheme = 'ALL';
+
+function applyFilters() {{
+  const q = (searchInput?.value || '').trim().toLowerCase();
+  items.forEach(li => {{
+    const themes = li.dataset.themes || '';
+    const text = (li.innerText || '').toLowerCase();
+    const passTheme = (activeTheme === 'ALL' || themes.includes(activeTheme));
+    const passQuery = (!q || text.includes(q));
+    li.style.display = (passTheme && passQuery) ? '' : 'none';
+  }});
+}}
+
 chips.forEach(btn => btn.addEventListener('click', () => {{
   chips.forEach(x => x.classList.remove('active'));
   btn.classList.add('active');
-  const t = btn.dataset.theme;
-  items.forEach(li => {{
-    const themes = li.dataset.themes || '';
-    li.style.display = (t === 'ALL' || themes.includes(t)) ? '' : 'none';
-  }});
+  activeTheme = btn.dataset.theme;
+  applyFilters();
 }}));
+
+if (searchInput) {{
+  searchInput.addEventListener('input', applyFilters);
+}}
 </script>
 </body>
 </html>'''
