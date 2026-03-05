@@ -18,6 +18,13 @@ fi
 TODAY="$(date +%F)"
 TARGET_HTML="$DAILY_DIR/$TODAY.html"
 
+# Guardrail: do not publish stale content under today's filename.
+if ! grep -q "$TODAY" "$LATEST_HTML"; then
+  echo "[publish] latest brief appears stale (missing today's date: $TODAY): $LATEST_HTML" >&2
+  echo "[publish] please run the generation step first, then publish." >&2
+  exit 2
+fi
+
 mkdir -p "$DAILY_DIR" "$ARCHIVE_DIR" "$WEEKLY_DIR"
 cp "$LATEST_HTML" "$TARGET_HTML"
 cp "$LATEST_HTML" "$ARCHIVE_DIR/$TODAY.html"
