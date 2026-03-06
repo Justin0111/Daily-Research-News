@@ -1,30 +1,26 @@
 # HEARTBEAT.md
 
-## Daily Brief Auto-Generation
+## 每日简讯发布（GitHub Pages）
 
-On each heartbeat:
+目标：保证打开 `https://justin0111.github.io/Daily-Research-News/` 时，能看到当天简讯。
 
-1. Ensure `memory/` exists.
-2. If `memory/heartbeat-state.json` is missing, initialize it with:
-   ```json
-   { "lastDailyBriefDate": null }
-   ```
-3. Read `memory/heartbeat-state.json`.
-4. If `lastDailyBriefDate` is not today (`YYYY-MM-DD`, Asia/Shanghai):
-   - Create or append to `memory/<today>.md` under a `## 简讯` section.
-   - Generate a concise daily brief (3-6 bullets) based on available context in this workspace/session.
-   - Include generation time.
-   - Update `memory/heartbeat-state.json` with today as `lastDailyBriefDate`.
-   - Commit and push to GitHub so the brief is visible on the repo page:
-     - `git add memory/<today>.md memory/heartbeat-state.json`
-     - `git commit -m "chore: daily brief <today>"` (skip commit if no staged changes)
-     - `git push origin main`
-   - Send a short alert message that today's brief has been generated and pushed.
-5. If today's brief already exists, do nothing and reply `HEARTBEAT_OK`.
+在每次 heartbeat 执行：
+
+1. 计算今天日期（Asia/Shanghai，`YYYY-MM-DD`）。
+2. 检查 `docs/daily/<today>.html` 是否存在：
+   - 若不存在：执行 `bash automation/run-daily-brief.sh`。
+   - 若存在：不重复生成，回复 `HEARTBEAT_OK`。
+3. 生成后校验：
+   - `docs/daily/<today>.html` 存在；
+   - `docs/index.html` 已包含当天入口（最新一期）；
+   - 变更已 push 到 `origin/main`。
+4. 成功后发送一句简短提示：
+   - `今日简讯已发布：<today>`
+
+失败处理：
+- 若脚本/推送失败，直接回报错误摘要（不要沉默）。
+- 不做破坏性回滚。
 
 Guardrails:
-- Only generate once per calendar day.
-- Do not overwrite existing user-written content.
-- Keep each brief short and practical.
-- Never run broad adds like `git add .`; only add the daily brief files.
-- If push fails, report the error in chat and keep local files intact.
+- 每天只发布一次；若当天已存在则不重复发布。
+- 只使用现有脚本，不手写替代发布逻辑。
